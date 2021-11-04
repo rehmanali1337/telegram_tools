@@ -15,6 +15,16 @@ class Client(TelegramClient):
         os.makedirs(_dir, exist_ok=True)
         self._joins_list_file = f"{_dir}/{self.session.filename.split('/')[-1]}_joinslist"
 
+    @staticmethod
+    def standardize_id(id: str) -> str:
+        id = str(id)
+        current_id = id
+        if str(id[0]) == '-':
+            current_id = str(id[1:])
+            if current_id[0:3] == '100':
+                current_id = current_id[3:]
+        return current_id
+
     def _dump_to_file(self, file, obj: object):
         with open(file, "wb") as f:
             pickle.dump(obj, f)
