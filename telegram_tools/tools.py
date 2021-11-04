@@ -40,7 +40,7 @@ class Client(TelegramClient):
             if self._have_joined_already(target_link):
                 print(f"User have already joined {target_link}")
                 self._add_to_joinslist(target_link)
-                return await self.get_entity(target_link)
+                return await self.get_input_entity(target_link)
         try:
             # Join public group
             updates = await self(JoinChannelRequest(target_link))
@@ -51,7 +51,7 @@ class Client(TelegramClient):
                 updates = await self(ImportChatInviteRequest(group_hash))
             except errors.rpcerrorlist.UserAlreadyParticipantError:
                 self._add_to_joinslist(target_link)
-                return await self.get_entity(target_link)
+                return await self.get_input_entity(target_link)
         if isinstance(updates, list):
             updates = updates[0]
         self._add_to_joinslist(target_link)
