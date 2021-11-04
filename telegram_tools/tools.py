@@ -58,12 +58,12 @@ class Client(TelegramClient):
         return updates
 
     async def delete_all_schedule_messages(self, target_group: types.Dialog):
-        history = await self.client(functions.messages.GetScheduledHistoryRequest(
+        history = await self(functions.messages.GetScheduledHistoryRequest(
             target_group, 0))
         ids = []
         for message in history.messages:
             ids.append(message.id)
-        await self.client(functions.messages.DeleteScheduledMessagesRequest(
+        await self(functions.messages.DeleteScheduledMessagesRequest(
             peer=target_group,
             id=ids
         ))
