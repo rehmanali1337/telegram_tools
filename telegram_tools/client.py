@@ -50,17 +50,45 @@ class Client(TelegramClient):
         if not ignore_cache:
             if target_link in self._joins_cache:
                 print(f'User have already joined {target_link} ')
-                return await self._joins_cache.get(target_link)
+                peer_id = await self._joins_cache.get(target_link)
+                print(peer_id, type(peer_id))
+                if peer_id is None:
+                    peer = await self.get_input_entity(target_link)
+                    if isinstance(peer, (types.InputChannel, types.InputPeerChannel)):
+                        print("Peer is channel")
+                        peer_id = peer.channel_id
+                    elif isinstance(peer, (types.PeerChat, types.InputPeerChat)):
+                        print("Peer is chat")
+                        peer_id = peer.chat_id
+                    await self._joins_cache.add(target_link, peer_id)
+                    return peer_id
+                return peer_id
+
+        print(f"Joining {target_link}")
+
         try:
             # Join public group
             updates = await self(JoinChannelRequest(target_link))
         except (TypeError, ValueError):
             # The group is private so join private
+            print("joining private group")
             group_hash = target_link.split('/')[-1]
             try:
                 updates = await self(ImportChatInviteRequest(group_hash))
             except errors.rpcerrorlist.UserAlreadyParticipantError:
-                return await self._joins_cache.get(target_link)
+                peer_id = await self._joins_cache.get(target_link)
+                if peer_id is None:
+                    peer = await self.get_input_entity(target_link)
+                    if isinstance(peer, (types.InputChannel, types.InputPeerChannel)):
+                        print("Peer is channel")
+                        peer_id = peer.channel_id
+                    elif isinstance(peer, (types.PeerChat, types.InputPeerChat)):
+                        print("Peer is chat")
+                        peer_id = peer.chat_id
+                    await self._joins_cache.add(target_link, peer_id)
+                    return peer_id
+                return peer_id
+
         if isinstance(updates, list):
             updates = updates[0].id
         elif isinstance(updates, types.Updates):
